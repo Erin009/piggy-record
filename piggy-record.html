@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>撲滿記帳</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<style>
+:root{
+  --bg:#fff4f1;--card:#ffffff;--ink:#5b3f45;--soft:#a98a90;--pink:#ff8fa8;--pink2:#ffd6df;
+  --mint:#bfe9d6;--yellow:#ffe29a;--line:#ffe0e6;--today:#fff0b8;--shadow:0 6px 0 #ffd6df;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#2b1f24;--card:#3a2a31;--ink:#ffe9ee;--soft:#c9a5ae;--pink:#ff8fa8;--pink2:#5a3641;
+  --mint:#3f6b5a;--yellow:#7a6530;--line:#52353f;--today:#5c4a22;--shadow:0 6px 0 #4a2f38;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#2b1f24;--card:#3a2a31;--ink:#ffe9ee;--soft:#c9a5ae;--pink:#ff8fa8;--pink2:#5a3641;
+  --mint:#3f6b5a;--yellow:#7a6530;--line:#52353f;--today:#5c4a22;--shadow:0 6px 0 #4a2f38;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Huninn","jf-openhuninn","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+header svg{width:84px;height:84px;flex:none;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){header svg{animation:none}}
+h1{margin:0;font-size:2rem;color:var(--pink);letter-spacing:.08em}
+header p{margin:0;color:var(--soft);font-size:.95rem}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:24px;padding:18px;box-shadow:var(--shadow);border:2px solid var(--line)}
+h2{margin:0 0 12px;font-size:1.15rem}
+label{display:block;font-size:.85rem;color:var(--soft);margin:10px 0 4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:9px 12px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cats input{position:absolute;opacity:0;width:0;height:0}
+.cats label{margin:0;text-align:center;border:2px solid var(--line);border-radius:14px;padding:6px 0;cursor:pointer;color:var(--ink);font-size:.8rem;background:var(--bg)}
+.cats label span{display:block;font-size:1.3rem;line-height:1.3}
+.cats input:checked+label{background:var(--pink2);border-color:var(--pink)}
+.cats input:focus-visible+label{outline:3px solid var(--pink)}
+.btn{width:100%;margin-top:16px;border:0;border-radius:18px;background:var(--pink);color:#fff;font:inherit;font-size:1.05rem;padding:12px;cursor:pointer;box-shadow:0 4px 0 #e66c8a}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #e66c8a}
+.btn.ghost{background:var(--mint);color:var(--ink);box-shadow:0 4px 0 var(--pink2);margin-top:12px}
+.btn.ghost:active{box-shadow:0 1px 0 var(--pink2)}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav h2{margin:0;font-size:1.3rem}
+.nav button{border:0;background:var(--pink2);color:var(--ink);width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+.total{display:flex;gap:10px;margin-bottom:12px}
+.total div{flex:1;background:var(--yellow);border-radius:16px;padding:8px 12px;font-size:.85rem}
+.total div:nth-child(2){background:var(--mint)}
+.total b{display:block;font-size:1.25rem}
+.total{margin-bottom:10px}
+.total label{margin:0 0 4px;color:inherit}
+.total input{padding:5px 10px;border-radius:10px;background:var(--card)}
+.total small{display:block;font-size:.75rem;opacity:.85;line-height:1.3}
+.bal.neg{background:#ffc2c2;color:#5b3f45}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:.8rem;color:var(--soft)}
+.day{min-height:62px;border:2px solid var(--line);border-radius:14px;background:var(--bg);padding:3px 4px;cursor:pointer;font:inherit;color:var(--ink);text-align:left;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.day.blank{visibility:hidden;cursor:default}
+.day .n{font-size:.78rem;color:var(--soft)}
+.day .amt{font-size:.78rem;color:var(--pink);font-weight:700;word-break:break-all;line-height:1.2}
+.day.has{background:var(--pink2)}
+.day.today{background:var(--today)}
+.day.today .n{color:var(--ink);font-weight:700}
+.day.sel{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink)}
+@media (max-width:520px){.day{min-height:52px;border-radius:10px}.day .amt{font-size:.68rem}}
+.sub{margin-top:18px}
+.item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--line)}
+.item:last-child{border:0}
+.item .ic{font-size:1.5rem}
+.item .meta{flex:1;min-width:0}
+.item .meta small{color:var(--soft);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .v{font-weight:700;color:var(--pink)}
+.del{border:0;background:none;color:var(--soft);cursor:pointer;font-size:1.1rem}
+.empty{color:var(--soft);text-align:center;padding:14px 0}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:.88rem}
+.bar .t{width:4.6em;flex:none}
+.bar .track{flex:1;height:14px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--pink);border-radius:99px}
+.bar .p{width:6.5em;text-align:right;flex:none}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding:2px 2px 6px}
+.tabs button{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;border-radius:99px;padding:8px 16px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.tabs button:focus-visible,.seg button:focus-visible,.mini:focus-visible,.acc:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.stack>*+*{margin-top:18px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sum div{background:var(--yellow);border-radius:16px;padding:8px 12px;font-size:.85rem}
+.sum div:nth-child(2){background:var(--mint)}
+.sum div:nth-child(3){background:var(--pink2)}
+.sum b{display:block;font-size:1.15rem}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--soft);font-size:10px;font-family:inherit}
+.acc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--line);border-radius:16px;background:var(--bg);width:100%;font:inherit;color:var(--ink);cursor:pointer;text-align:left;margin-bottom:8px}
+.acc.sel{border-color:var(--pink);background:var(--pink2)}
+.acc small{color:var(--soft);display:block}
+.acc .v{font-weight:700;color:var(--pink)}
+.reels{display:flex;gap:10px;justify-content:center;margin:6px 0 14px}
+.reel{flex:1;max-width:140px;background:var(--bg);border:3px solid var(--pink);border-radius:20px;padding:10px 4px;text-align:center;box-shadow:inset 0 4px 0 var(--pink2)}
+.reel .l{font-size:.78rem;color:var(--soft)}
+.reel .e{font-size:2.6rem;line-height:1.3}
+.reel .n{font-weight:700;font-size:.95rem}
+.reel .p{color:var(--soft);font-size:.8rem}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button,.mini{border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;border-radius:99px;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pink2);border-color:var(--pink)}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:2px solid var(--line);border-radius:99px;padding:3px 6px 3px 12px;margin:0 6px 6px 0}
+.chip button{border:0;background:none;color:var(--soft);cursor:pointer;font-size:1rem}
+.btn.danger{background:#ff9a9a;color:#5b3f45;box-shadow:0 4px 0 #e57f7f}
+.hint{color:var(--soft);font-size:.85rem;margin:0 0 10px}
+
+.tabs a{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;border-radius:99px;padding:8px 16px;white-space:nowrap}
+.tabs a[aria-current="page"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.tabs a:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.tabs a.home{margin-left:auto;background:var(--mint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="50" cy="58" rx="36" ry="28" fill="#ffb3c4"/>
+      <circle cx="30" cy="34" r="9" fill="#ff8fa8"/><circle cx="68" cy="34" r="9" fill="#ff8fa8"/>
+      <ellipse cx="86" cy="60" rx="9" ry="8" fill="#ff8fa8"/>
+      <circle cx="84" cy="60" r="1.6" fill="#7a3b4c"/><circle cx="89" cy="60" r="1.6" fill="#7a3b4c"/>
+      <circle cx="68" cy="50" r="3.5" fill="#5b3f45"/>
+      <ellipse cx="60" cy="62" rx="6" ry="4" fill="#ff8fa8" opacity=".7"/>
+      <rect x="38" y="31" width="22" height="5" rx="2.5" fill="#7a3b4c"/>
+      <rect x="32" y="80" width="10" height="12" rx="4" fill="#ff8fa8"/><rect x="58" y="80" width="10" height="12" rx="4" fill="#ff8fa8"/>
+      <circle cx="49" cy="14" r="9" fill="#ffd45e" stroke="#e6b83a" stroke-width="2"/><text x="49" y="18.5" font-size="12" text-anchor="middle" fill="#a9801b" font-weight="700">$</text>
+    </svg>
+    <div><h1>撲滿記帳</h1><p>每一筆都投進撲滿，月底一眼看出錢花去哪囉</p></div>
+  </header>
+  <nav class="tabs" aria-label="功能分頁"><a href="piggy-record.html" aria-current="page">📒 記帳</a><a href="piggy-stats.html">📊 統計報表</a><a href="piggy-accounts.html">💳 帳戶與設定</a><a href="piggy-slot.html">🎰 餐點老虎機</a><a class="home" href="https://thwen39.github.io/web-islands/">🏝️ 回群島</a></nav>
+  <div class="tab" id="tab-main">
+  <div class="grid">
+    <section class="card" aria-labelledby="addh">
+      <h2 id="addh">記一筆</h2>
+      <label for="date">日期</label>
+      <input type="date" id="date" required>
+      <div class="row">
+        <div><label for="account">支出帳戶</label>
+          <select id="account">
+            <option>現金</option><option>信用卡</option><option>悠遊卡</option><option>銀行帳戶</option><option>行動支付</option>
+          </select></div>
+        <div><label for="amount">金額（元）</label>
+          <input type="number" id="amount" min="1" step="1" inputmode="numeric" placeholder="例如 85"></div>
+      </div>
+      <label id="catlabel">分類</label>
+      <div class="cats" role="radiogroup" aria-labelledby="catlabel" id="cats"></div>
+      <label for="note">備註（可不填）</label>
+      <input type="text" id="note" maxlength="30" placeholder="例如 珍珠奶茶">
+      <button class="btn" id="add" type="button">投進撲滿</button>
+      <button class="btn ghost" id="export" type="button" hidden>一鍵匯出 CSV</button>
+      <div id="msg" role="status" class="empty" style="padding:8px 0 0"></div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="月曆">
+        <div class="nav">
+          <button id="prev" aria-label="上個月">◀</button>
+          <h2 id="title"></h2>
+          <button id="next" aria-label="下個月">▶</button>
+        </div>
+        <div class="total">
+          <div><label for="income">本月零用錢（元）</label><input type="number" id="income" min="0" step="1" inputmode="numeric" placeholder="輸入收入"></div>
+          <div>本月支出<b id="mTotal">$0</b></div>
+        </div>
+        <div class="total">
+          <div id="balBox" class="bal">本月可用餘額<b id="mBal">$0</b><small id="balHint"></small></div>
+          <div>日均花費<b id="mAvg">$0</b></div>
+        </div>
+        <div class="cal" id="cal"></div>
+      </section>
+
+      <section class="card sub">
+        <h2 id="dayTitle"></h2>
+        <div id="dayList"></div>
+      </section>
+
+      <section class="card sub">
+        <h2>這個月花在哪？</h2>
+        <div id="breakdown"></div>
+      </section>
+    </div>
+  </div>
+  </div>
+
+  
+</div>
+<script>
+const CATS=[["餐飲","🍜"],["交通","🚌"],["購物","🛍️"],["娛樂","🎮"],["居家","🏠"],["醫療","💊"],["學習","📚"],["其他","✨"]];
+const KEY="piggy-records-v1";
+let records=[];
+try{const raw=localStorage.getItem(KEY);if(raw)records=JSON.parse(raw)||[];}catch(e){records=[];}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(records));}catch(e){msg("無法寫入瀏覽器儲存空間，資料可能不會保留");}}
+
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const money=n=>"$"+Math.round(n).toLocaleString("zh-Hant");
+const icon=c=>(CATS.find(x=>x[0]===c)||["","✨"])[1];
+const todayStr=ymd(new Date());
+let view=new Date();view.setDate(1);
+let selected=todayStr;
+
+$("cats").innerHTML=CATS.map((c,i)=>`<input type="radio" name="cat" id="c${i}" value="${c[0]}"${i===0?" checked":""}><label for="c${i}"><span>${c[1]}</span>${c[0]}</label>`).join("");
+$("date").value=todayStr;
+
+const IKEY="piggy-income-v1";
+let income={};
+try{const raw=localStorage.getItem(IKEY);if(raw)income=JSON.parse(raw)||{};}catch(e){income={};}
+const mkey=()=>view.getFullYear()+"-"+pad(view.getMonth()+1);
+$("income").oninput=()=>{
+  const v=parseInt($("income").value,10);
+  if(v>=0)income[mkey()]=v;else delete income[mkey()];
+  try{localStorage.setItem(IKEY,JSON.stringify(income));}catch(e){}
+  render();
+};
+
+function msg(t){$("msg").textContent=t;}
+
+$("add").onclick=()=>{
+  const date=$("date").value,amount=parseInt($("amount").value,10);
+  if(!date){msg("請先選擇日期");return;}
+  if(!amount||amount<1){msg("請輸入大於 0 的金額");return;}
+  records.push({id:Date.now()+Math.random().toString(36).slice(2,6),date,account:$("account").value,
+    category:document.querySelector('input[name="cat"]:checked').value,amount,note:$("note").value.trim()});
+  save();
+  $("amount").value="";$("note").value="";
+  selected=date;
+  const [y,m]=date.split("-").map(Number);view=new Date(y,m-1,1);
+  msg("叮咚！已投進撲滿 "+money(amount));
+  render();
+};
+$("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render();};
+$("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render();};
+$("date").onchange=()=>{if($("date").value){selected=$("date").value;const [y,m]=selected.split("-").map(Number);view=new Date(y,m-1,1);render();}};
+
+function render(){
+  const y=view.getFullYear(),m=view.getMonth();
+  const prefix=y+"-"+pad(m+1)+"-";
+  $("title").textContent=y+" 年 "+(m+1)+" 月";
+  const monthRecs=records.filter(r=>r.date.startsWith(prefix));
+  const byDay={};monthRecs.forEach(r=>{byDay[r.date]=(byDay[r.date]||0)+r.amount;});
+  const total=monthRecs.reduce((s,r)=>s+r.amount,0);
+  const dim=new Date(y,m+1,0).getDate();
+  $("mTotal").textContent=money(total);
+  $("mAvg").textContent=money(total/dim);
+  const own=income[mkey()],inc=own!==undefined?own:(typeof settings.def==="number"?settings.def:undefined);
+  if(document.activeElement!==$("income"))$("income").value=own===undefined?"":own;
+  $("income").placeholder=typeof settings.def==="number"?"預設 "+settings.def:"輸入收入";
+  const bal=(inc||0)-total;
+  $("mBal").textContent=(bal<0?"-":"")+money(Math.abs(bal));
+  $("balBox").classList.toggle("neg",inc!==undefined&&bal<0);
+  let hint="";
+  if(inc===undefined)hint="先輸入本月零用錢";
+  else if(bal<0)hint="超支囉，要省著點！";
+  else{
+    const now=new Date();
+    if(now.getFullYear()===y&&now.getMonth()===m){const left=dim-now.getDate()+1;hint="剩 "+left+" 天，每天約可花 "+money(bal/left);}
+    else hint="零用錢 "+money(inc)+" − 支出 "+money(total);
+  }
+  $("balHint").textContent=hint;
+
+  const cal=$("cal");cal.innerHTML="";
+  "日一二三四五六".split("").forEach(d=>{const e=document.createElement("div");e.className="dow";e.textContent=d;cal.appendChild(e);});
+  const first=new Date(y,m,1).getDay();
+  for(let i=0;i<first;i++){const b=document.createElement("div");b.className="day blank";cal.appendChild(b);}
+  for(let d=1;d<=dim;d++){
+    const ds=prefix+pad(d),b=document.createElement("button");
+    b.type="button";
+    b.className="day"+(byDay[ds]?" has":"")+(ds===todayStr?" today":"")+(ds===selected?" sel":"");
+    b.setAttribute("aria-label",(m+1)+"月"+d+"日"+(byDay[ds]?"，花費"+byDay[ds]+"元":"，沒有花費"));
+    b.innerHTML=`<span class="n">${d}</span><span class="amt">${byDay[ds]?money(byDay[ds]):""}</span>`;
+    b.onclick=()=>{selected=ds;$("date").value=ds;render();};
+    cal.appendChild(b);
+  }
+
+  // selected day list
+  const dayRecs=records.filter(r=>r.date===selected);
+  const [sy,sm,sd]=selected.split("-").map(Number);
+  $("dayTitle").textContent=sm+" 月 "+sd+" 日的花費"+(dayRecs.length?"　"+money(dayRecs.reduce((s,r)=>s+r.amount,0)):"");
+  const list=$("dayList");list.innerHTML="";
+  if(!dayRecs.length){list.innerHTML='<div class="empty">這天撲滿還是空的，來記一筆吧 🐷</div>';}
+  dayRecs.forEach(r=>{
+    const el=document.createElement("div");el.className="item";
+    el.innerHTML='<span class="ic"></span><div class="meta"><div class="c"></div><small></small></div><span class="v"></span><button class="del" type="button" aria-label="刪除這筆">✕</button>';
+    el.querySelector(".ic").textContent=icon(r.category);
+    el.querySelector(".c").textContent=r.category+(r.note?"．"+r.note:"");
+    el.querySelector("small").textContent=r.account;
+    el.querySelector(".v").textContent=money(r.amount);
+    el.querySelector(".del").onclick=()=>{records=records.filter(x=>x.id!==r.id);save();render();};
+    list.appendChild(el);
+  });
+
+  // breakdown
+  const bd=$("breakdown");bd.innerHTML="";
+  if(!total){bd.innerHTML='<div class="empty">這個月還沒有紀錄</div>';return;}
+  const sums={};monthRecs.forEach(r=>{sums[r.category]=(sums[r.category]||0)+r.amount;});
+  Object.entries(sums).sort((a,b)=>b[1]-a[1]).forEach(([c,v])=>{
+    const pct=v/total*100,row=document.createElement("div");row.className="bar";
+    row.innerHTML='<span class="t"></span><span class="track"><span class="fill"></span></span><span class="p"></span>';
+    row.querySelector(".t").textContent=icon(c)+" "+c;
+    row.querySelector(".fill").style.width=pct+"%";
+    row.querySelector(".p").textContent=money(v)+"（"+Math.round(pct)+"%）";
+    bd.appendChild(row);
+  });
+}
+let dl=null;
+if(!window.claude){dl={save:async({filename,data})=>{const u=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);return{status:"saved"};}};$("export").hidden=false;}
+(async()=>{try{if(window.claude&&claude.use){dl=await claude.use("downloads");if(dl)$("export").hidden=false;}}catch(e){dl=null;}})();
+$("export").onclick=async()=>{
+  if(!dl)return;
+  if(!records.length&&!Object.keys(income).length){msg("還沒有紀錄可以匯出");return;}
+  const q=s=>{s=String(s);if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
+  const items=[];
+  Object.entries(income).forEach(([k,v])=>items.push([k+"-01","收入","","",v,"本月零用錢"]));
+  records.forEach(r=>items.push([r.date,"支出",r.account,r.category,r.amount,r.note]));
+  items.sort((a,b)=>a[0].localeCompare(b[0])||(a[1]==="收入"?-1:1));
+  const rows=[["日期","類型","帳戶","分類","金額","備註"]].concat(items);
+  const csv="\uFEFF"+rows.map(r=>r.map(q).join(",")).join("\r\n");
+  try{
+    await dl.save({filename:"撲滿記帳_"+todayStr+".csv",data:csv});
+    msg("已匯出 "+records.length+" 筆支出");
+  }catch(e){
+    if(e&&e.code==="declined")return;
+    msg(e&&e.code==="host_unavailable"?"這裡無法儲存檔案，請改用瀏覽器或電腦開啟":"目前無法匯出，請稍後再試");
+  }
+};
+
+/* ---- settings ---- */
+const SKEY="piggy-settings-v1";
+let settings={accounts:["現金","信用卡","悠遊卡","銀行帳戶","行動支付"],theme:"auto",def:null};
+try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&typeof s==="object")settings=Object.assign(settings,s);}catch(e){}
+function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(settings));}catch(e){}}
+function applyTheme(){const h=document.documentElement;if(settings.theme==="auto")h.removeAttribute("data-theme");else h.setAttribute("data-theme",settings.theme);}
+function fillAccounts(){
+  const sel=$("account"),old=sel.value;sel.innerHTML="";
+  settings.accounts.forEach(a=>{const o=document.createElement("option");o.textContent=a;sel.appendChild(o);});
+  if(settings.accounts.includes(old))sel.value=old;
+}
+const sum=a=>a.reduce((s,r)=>s+r.amount,0);
+function monthData(y,m){
+  const p=y+"-"+pad(m+1),rs=records.filter(r=>r.date.startsWith(p));
+  const i=income[p]!==undefined?income[p]:(typeof settings.def==="number"?settings.def:0);
+  return{rs,out:sum(rs),inc:i};
+}
+
+
+applyTheme();fillAccounts();render();
+
+</script>
+</body>
+</html>

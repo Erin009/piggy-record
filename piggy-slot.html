@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>撲滿記帳｜餐點老虎機</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<style>
+:root{
+  --bg:#fff4f1;--card:#ffffff;--ink:#5b3f45;--soft:#a98a90;--pink:#ff8fa8;--pink2:#ffd6df;
+  --mint:#bfe9d6;--yellow:#ffe29a;--line:#ffe0e6;--today:#fff0b8;--shadow:0 6px 0 #ffd6df;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#2b1f24;--card:#3a2a31;--ink:#ffe9ee;--soft:#c9a5ae;--pink:#ff8fa8;--pink2:#5a3641;
+  --mint:#3f6b5a;--yellow:#7a6530;--line:#52353f;--today:#5c4a22;--shadow:0 6px 0 #4a2f38;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#2b1f24;--card:#3a2a31;--ink:#ffe9ee;--soft:#c9a5ae;--pink:#ff8fa8;--pink2:#5a3641;
+  --mint:#3f6b5a;--yellow:#7a6530;--line:#52353f;--today:#5c4a22;--shadow:0 6px 0 #4a2f38;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Huninn","jf-openhuninn","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+header svg{width:84px;height:84px;flex:none;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){header svg{animation:none}}
+h1{margin:0;font-size:2rem;color:var(--pink);letter-spacing:.08em}
+header p{margin:0;color:var(--soft);font-size:.95rem}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:24px;padding:18px;box-shadow:var(--shadow);border:2px solid var(--line)}
+h2{margin:0 0 12px;font-size:1.15rem}
+label{display:block;font-size:.85rem;color:var(--soft);margin:10px 0 4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:9px 12px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cats input{position:absolute;opacity:0;width:0;height:0}
+.cats label{margin:0;text-align:center;border:2px solid var(--line);border-radius:14px;padding:6px 0;cursor:pointer;color:var(--ink);font-size:.8rem;background:var(--bg)}
+.cats label span{display:block;font-size:1.3rem;line-height:1.3}
+.cats input:checked+label{background:var(--pink2);border-color:var(--pink)}
+.cats input:focus-visible+label{outline:3px solid var(--pink)}
+.btn{width:100%;margin-top:16px;border:0;border-radius:18px;background:var(--pink);color:#fff;font:inherit;font-size:1.05rem;padding:12px;cursor:pointer;box-shadow:0 4px 0 #e66c8a}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #e66c8a}
+.btn.ghost{background:var(--mint);color:var(--ink);box-shadow:0 4px 0 var(--pink2);margin-top:12px}
+.btn.ghost:active{box-shadow:0 1px 0 var(--pink2)}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav h2{margin:0;font-size:1.3rem}
+.nav button{border:0;background:var(--pink2);color:var(--ink);width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+.total{display:flex;gap:10px;margin-bottom:12px}
+.total div{flex:1;background:var(--yellow);border-radius:16px;padding:8px 12px;font-size:.85rem}
+.total div:nth-child(2){background:var(--mint)}
+.total b{display:block;font-size:1.25rem}
+.total{margin-bottom:10px}
+.total label{margin:0 0 4px;color:inherit}
+.total input{padding:5px 10px;border-radius:10px;background:var(--card)}
+.total small{display:block;font-size:.75rem;opacity:.85;line-height:1.3}
+.bal.neg{background:#ffc2c2;color:#5b3f45}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:.8rem;color:var(--soft)}
+.day{min-height:62px;border:2px solid var(--line);border-radius:14px;background:var(--bg);padding:3px 4px;cursor:pointer;font:inherit;color:var(--ink);text-align:left;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.day.blank{visibility:hidden;cursor:default}
+.day .n{font-size:.78rem;color:var(--soft)}
+.day .amt{font-size:.78rem;color:var(--pink);font-weight:700;word-break:break-all;line-height:1.2}
+.day.has{background:var(--pink2)}
+.day.today{background:var(--today)}
+.day.today .n{color:var(--ink);font-weight:700}
+.day.sel{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink)}
+@media (max-width:520px){.day{min-height:52px;border-radius:10px}.day .amt{font-size:.68rem}}
+.sub{margin-top:18px}
+.item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--line)}
+.item:last-child{border:0}
+.item .ic{font-size:1.5rem}
+.item .meta{flex:1;min-width:0}
+.item .meta small{color:var(--soft);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .v{font-weight:700;color:var(--pink)}
+.del{border:0;background:none;color:var(--soft);cursor:pointer;font-size:1.1rem}
+.empty{color:var(--soft);text-align:center;padding:14px 0}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:.88rem}
+.bar .t{width:4.6em;flex:none}
+.bar .track{flex:1;height:14px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--pink);border-radius:99px}
+.bar .p{width:6.5em;text-align:right;flex:none}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding:2px 2px 6px}
+.tabs button{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;border-radius:99px;padding:8px 16px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.tabs button:focus-visible,.seg button:focus-visible,.mini:focus-visible,.acc:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.stack>*+*{margin-top:18px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sum div{background:var(--yellow);border-radius:16px;padding:8px 12px;font-size:.85rem}
+.sum div:nth-child(2){background:var(--mint)}
+.sum div:nth-child(3){background:var(--pink2)}
+.sum b{display:block;font-size:1.15rem}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--soft);font-size:10px;font-family:inherit}
+.acc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--line);border-radius:16px;background:var(--bg);width:100%;font:inherit;color:var(--ink);cursor:pointer;text-align:left;margin-bottom:8px}
+.acc.sel{border-color:var(--pink);background:var(--pink2)}
+.acc small{color:var(--soft);display:block}
+.acc .v{font-weight:700;color:var(--pink)}
+.reels{display:flex;gap:10px;justify-content:center;margin:6px 0 14px}
+.reel{flex:1;max-width:140px;background:var(--bg);border:3px solid var(--pink);border-radius:20px;padding:10px 4px;text-align:center;box-shadow:inset 0 4px 0 var(--pink2)}
+.reel .l{font-size:.78rem;color:var(--soft)}
+.reel .e{font-size:2.6rem;line-height:1.3}
+.reel .n{font-weight:700;font-size:.95rem}
+.reel .p{color:var(--soft);font-size:.8rem}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button,.mini{border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;border-radius:99px;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pink2);border-color:var(--pink)}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:2px solid var(--line);border-radius:99px;padding:3px 6px 3px 12px;margin:0 6px 6px 0}
+.chip button{border:0;background:none;color:var(--soft);cursor:pointer;font-size:1rem}
+.btn.danger{background:#ff9a9a;color:#5b3f45;box-shadow:0 4px 0 #e57f7f}
+.hint{color:var(--soft);font-size:.85rem;margin:0 0 10px}
+
+.tabs a{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;border-radius:99px;padding:8px 16px;white-space:nowrap}
+.tabs a[aria-current="page"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.tabs a:focus-visible{outline:3px solid var(--pink);outline-offset:1px}
+.tabs a.home{margin-left:auto;background:var(--mint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="50" cy="58" rx="36" ry="28" fill="#ffb3c4"/>
+      <circle cx="30" cy="34" r="9" fill="#ff8fa8"/><circle cx="68" cy="34" r="9" fill="#ff8fa8"/>
+      <ellipse cx="86" cy="60" rx="9" ry="8" fill="#ff8fa8"/>
+      <circle cx="84" cy="60" r="1.6" fill="#7a3b4c"/><circle cx="89" cy="60" r="1.6" fill="#7a3b4c"/>
+      <circle cx="68" cy="50" r="3.5" fill="#5b3f45"/>
+      <ellipse cx="60" cy="62" rx="6" ry="4" fill="#ff8fa8" opacity=".7"/>
+      <rect x="38" y="31" width="22" height="5" rx="2.5" fill="#7a3b4c"/>
+      <rect x="32" y="80" width="10" height="12" rx="4" fill="#ff8fa8"/><rect x="58" y="80" width="10" height="12" rx="4" fill="#ff8fa8"/>
+      <circle cx="49" cy="14" r="9" fill="#ffd45e" stroke="#e6b83a" stroke-width="2"/><text x="49" y="18.5" font-size="12" text-anchor="middle" fill="#a9801b" font-weight="700">$</text>
+    </svg>
+    <div><h1>撲滿記帳</h1><p>每一筆都投進撲滿，月底一眼看出錢花去哪囉</p></div>
+  </header>
+  <nav class="tabs" aria-label="功能分頁"><a href="piggy-record.html">📒 記帳</a><a href="piggy-stats.html">📊 統計報表</a><a href="piggy-accounts.html">💳 帳戶與設定</a><a href="piggy-slot.html" aria-current="page">🎰 餐點老虎機</a><a class="home" href="https://thwen39.github.io/web-islands/">🏝️ 回群島</a></nav>
+  <div class="tab" id="tab-game">
+    <section class="card">
+      <h2>今天吃什麼？餐點老虎機</h2>
+      <p class="hint">拉一下拉霸，轉出主餐、飲料和甜點，還會算出這一餐大約多少錢。喜歡的話可以直接記進今天的帳。</p>
+      <div class="reels">
+        <div class="reel"><div class="l">主餐</div><div class="e" id="rE0">🍽️</div><div class="n" id="rN0">？</div><div class="p" id="rP0">&nbsp;</div></div>
+        <div class="reel"><div class="l">飲料</div><div class="e" id="rE1">🥤</div><div class="n" id="rN1">？</div><div class="p" id="rP1">&nbsp;</div></div>
+        <div class="reel"><div class="l">甜點</div><div class="e" id="rE2">🍰</div><div class="n" id="rN2">？</div><div class="p" id="rP2">&nbsp;</div></div>
+      </div>
+      <div id="slotRes" role="status" aria-live="polite" class="empty">按下拉霸，讓撲滿幫你決定</div>
+      <label for="account">記帳時使用的帳戶</label><select id="account"></select>
+      <button class="btn" id="pull" type="button">🎰 拉霸！</button>
+      <button class="btn ghost" id="eat" type="button" hidden>就吃這個，記到今天</button>
+    </section>
+  </div>
+
+  
+</div>
+<script>
+const CATS=[["餐飲","🍜"],["交通","🚌"],["購物","🛍️"],["娛樂","🎮"],["居家","🏠"],["醫療","💊"],["學習","📚"],["其他","✨"]];
+const KEY="piggy-records-v1";
+let records=[];
+try{const raw=localStorage.getItem(KEY);if(raw)records=JSON.parse(raw)||[];}catch(e){records=[];}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(records));}catch(e){msg("無法寫入瀏覽器儲存空間，資料可能不會保留");}}
+
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const money=n=>"$"+Math.round(n).toLocaleString("zh-Hant");
+const icon=c=>(CATS.find(x=>x[0]===c)||["","✨"])[1];
+const todayStr=ymd(new Date());
+let view=new Date();view.setDate(1);
+let selected=todayStr;
+
+const IKEY="piggy-income-v1";let income={};
+try{const raw=localStorage.getItem(IKEY);if(raw)income=JSON.parse(raw)||{};}catch(e){income={};}
+const mkey=()=>view.getFullYear()+"-"+pad(view.getMonth()+1);
+function msg(t){}
+/* ---- settings ---- */
+const SKEY="piggy-settings-v1";
+let settings={accounts:["現金","信用卡","悠遊卡","銀行帳戶","行動支付"],theme:"auto",def:null};
+try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&typeof s==="object")settings=Object.assign(settings,s);}catch(e){}
+function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(settings));}catch(e){}}
+function applyTheme(){const h=document.documentElement;if(settings.theme==="auto")h.removeAttribute("data-theme");else h.setAttribute("data-theme",settings.theme);}
+function fillAccounts(){
+  const sel=$("account");if(!sel)return;const old=sel.value;sel.innerHTML="";
+  settings.accounts.forEach(a=>{const o=document.createElement("option");o.textContent=a;sel.appendChild(o);});
+  if(settings.accounts.includes(old))sel.value=old;
+}
+const sum=a=>a.reduce((s,r)=>s+r.amount,0);
+function monthData(y,m){
+  const p=y+"-"+pad(m+1),rs=records.filter(r=>r.date.startsWith(p));
+  const i=income[p]!==undefined?income[p]:(typeof settings.def==="number"?settings.def:0);
+  return{rs,out:sum(rs),inc:i};
+}
+
+/* ---- food slot ---- */
+const MAINS=[["🍜","牛肉麵",130],["🍱","排骨便當",100],["🍔","漢堡",90],["🍣","壽司",160],["🍕","披薩",180],["🍛","咖哩飯",110],["🥟","水餃",70],["🍳","蛋餅",45],["🥪","三明治",60],["🍲","火鍋",300]];
+const DRINKS=[["🧋","珍珠奶茶",60],["☕","咖啡",55],["🥤","紅茶",25],["🥛","豆漿",25],["💧","開水",0],["🍵","綠茶",30]];
+const DESSERTS=[["🍰","蛋糕",80],["🍦","冰淇淋",45],["🍩","甜甜圈",40],["🍡","麻糬",35],["🍪","餅乾",30],["🚫","不吃甜點",0]];
+const REELS=[MAINS,DRINKS,DESSERTS];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const reduceMotion=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+let timers=[],slotResult=null;
+function showReel(i,f){$("rE"+i).textContent=f[0];$("rN"+i).textContent=f[1];$("rP"+i).textContent=f[2]?money(f[2]):"免費";}
+function stopGame(){timers.forEach(t=>{clearInterval(t);clearTimeout(t);});timers=[];$("pull").disabled=false;}
+function pull(){
+  stopGame();
+  const res=REELS.map(pick);
+  const finish=()=>{
+    const total=res.reduce((s,f)=>s+f[2],0);
+    const tag=total<=120?"省錢小資餐":total>=300?"豪華大餐":"剛剛好的一餐";
+    slotResult={total,note:res.filter(f=>f[2]>0||f[0]!=="🚫").map(f=>f[1]).join("＋")};
+    $("slotRes").textContent="今天吃："+slotResult.note+"，約 "+money(total)+"（"+tag+"）";
+    $("eat").hidden=false;$("pull").disabled=false;
+  };
+  $("eat").hidden=true;
+  if(reduceMotion){res.forEach((f,i)=>showReel(i,f));finish();return;}
+  $("pull").disabled=true;$("slotRes").textContent="轉轉轉…";
+  res.forEach((f,i)=>{
+    timers.push(setInterval(()=>showReel(i,pick(REELS[i])),70));
+  });
+  res.forEach((f,i)=>{
+    timers.push(setTimeout(()=>{clearInterval(timers[i]);showReel(i,f);if(i===2)finish();},800+i*500));
+  });
+}
+$("pull").onclick=pull;
+$("eat").onclick=()=>{
+  if(!slotResult)return;
+  records.push({id:Date.now()+Math.random().toString(36).slice(2,6),date:todayStr,account:$("account").value,category:"餐飲",amount:slotResult.total,note:slotResult.note.slice(0,30)});
+  save();selected=todayStr;view=new Date();view.setDate(1);
+  $("slotRes").textContent="已把 "+money(slotResult.total)+" 記到今天的餐飲，吃飽飽！";
+  $("eat").hidden=true;slotResult=null;render();
+};
+
+
+function render(){}
+applyTheme();fillAccounts();
+
+</script>
+</body>
+</html>
